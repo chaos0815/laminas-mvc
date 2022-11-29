@@ -183,9 +183,10 @@ The `Redirect` plugin does this work for you. It offers three methods:
 
 - `toRoute(string $route = null, array $params = [], array $options = [], bool $reuseMatchedParams = false) : Laminas\Http\Response`:
   Redirects to a named route, using the provided `$params` and `$options` to
-  assembled the URL.
+  assembled the URL. Option `'statusCode'` allows you to pass the HTTP status 
+  code used for the redirect. 
 
-- `toUrl(string $url) : Laminas\Http\Response`: Simply redirects to the given URL.
+- `toUrl(string $url, int $code) : Laminas\Http\Response`: Simply redirects to the given URL using the given status code.
 
 - `refresh() : Laminas\Http\Response`: Refresh to current route.
 

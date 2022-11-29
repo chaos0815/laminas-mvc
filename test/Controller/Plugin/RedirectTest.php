@@ -3,6 +3,7 @@
 namespace LaminasTest\Mvc\Controller\Plugin;
 
 use Laminas\Http\Response;
+use Laminas\Mvc\Controller\Plugin\Redirect;
 use Laminas\Mvc\Controller\Plugin\Redirect as RedirectPlugin;
 use Laminas\Mvc\Exception\DomainException;
 use Laminas\Mvc\Exception\RuntimeException;
@@ -16,6 +17,13 @@ use PHPUnit\Framework\TestCase;
 
 class RedirectTest extends TestCase
 {
+    private Redirect         $plugin;
+    private Response         $response;
+    private SimpleRouteStack $router;
+    private RouteMatch       $routeMatch;
+    private MvcEvent         $event;
+    private SampleController $controller;
+
     public function setUp(): void
     {
         $this->response = new Response();
@@ -53,6 +61,16 @@ class RedirectTest extends TestCase
         $this->assertEquals('/', $location->getFieldValue());
     }
 
+    public function testPluginCanRedirectToRouteWithStatusCodeWhenProperlyConfigured()
+    {
+        $response = $this->plugin->toRoute('home', [], ['statusCode' => 301]);
+        $this->assertTrue($response->isRedirect());
+        $headers = $response->getHeaders();
+        $location = $headers->get('Location');
+        $this->assertEquals('/', $location->getFieldValue());
+        $this->assertEquals(301, $response->getStatusCode());
+    }
+
     public function testPluginCanRedirectToUrlWhenProperlyConfigured()
     {
         $response = $this->plugin->toUrl('/foo');
@@ -60,6 +78,17 @@ class RedirectTest extends TestCase
         $headers = $response->getHeaders();
         $location = $headers->get('Location');
         $this->assertEquals('/foo', $location->getFieldValue());
+        $this->assertEquals(302, $response->getStatusCode());
+    }
+
+    public function testPluginCanRedirectToUrlWithStatusCodeWhenProperlyConfigured()
+    {
+        $response = $this->plugin->toUrl('/foo', 301);
+        $this->assertTrue($response->isRedirect());
+        $headers = $response->getHeaders();
+        $location = $headers->get('Location');
+        $this->assertEquals('/foo', $location->getFieldValue());
+        $this->assertEquals(301, $response->getStatusCode());
     }
 
     public function testPluginWithoutControllerRaisesDomainException()
@@ -106,7 +135,7 @@ class RedirectTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('RouteMatch');
-        $url = $this->plugin->toRoute();
+        $this->plugin->toRoute();
     }
 
     public function testPassingNoArgumentsWithValidRouteMatchGeneratesUrl()

@@ -8,9 +8,6 @@ use Laminas\Mvc\Exception;
 use Laminas\Mvc\InjectApplicationEventInterface;
 use Laminas\Mvc\MvcEvent;
 
-/**
- * @todo       allow specifying status code as a default, or as an option to methods
- */
 class Redirect extends AbstractPlugin
 {
     protected $event;
@@ -38,26 +35,30 @@ class Redirect extends AbstractPlugin
 
         $urlPlugin = $controller->plugin('url');
 
+        $code = 302;
+
         if (is_scalar($options)) {
             $url = $urlPlugin->fromRoute($route, $params, $options);
         } else {
-            $url = $urlPlugin->fromRoute($route, $params, $options, $reuseMatchedParams);
+            $url  = $urlPlugin->fromRoute($route, $params, $options, $reuseMatchedParams);
+            $code = $options['statusCode'] ?? 302;
         }
 
-        return $this->toUrl($url);
+        return $this->toUrl($url, $code);
     }
 
     /**
      * Generate redirect response based on given URL
      *
      * @param  string $url
+     * @param  int    $code HTTP Status code, default is 302
      * @return Response
      */
-    public function toUrl($url)
+    public function toUrl($url, $code = 302)
     {
         $response = $this->getResponse();
         $response->getHeaders()->addHeaderLine('Location', $url);
-        $response->setStatusCode(302);
+        $response->setStatusCode($code);
         return $response;
     }
 
